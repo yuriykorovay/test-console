@@ -1,0 +1,31 @@
+#cloud-config
+packages:
+  - curl
+users:
+  - name: cluster
+    ssh-authorized-keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDftoqGWzAznEfySf0b78hISa3Tseurf4Q9YIUF/JWWb yk88@ukr.net
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+
+write_files:
+ - path: /root/.ssh/id_rsa
+   content: |
+    -----BEGIN OPENSSH PRIVATE KEY-----
+    b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+    QyNTUxOQAAACAVsj+GODN52OFKlYEtmrZnKYLNnIxUHkGvcPRgl6JLQgAAAJCpnLZ1qZy2
+    dQAAAAtzc2gtZWQyNTUxOQAAACAVsj+GODN52OFKlYEtmrZnKYLNnIxUHkGvcPRgl6JLQg
+    AAAEDj0ugHJJAP01FSbtSRynHQ0KLBiNulAa8mPJwhwXwYCRWyP4Y4M3nY4UqVgS2atmcp
+    gs2cjFQeQa9w9GCXoktCAAAADHlrODhAdWtyLm5ldAE=
+    -----END OPENSSH PRIVATE KEY-----
+  
+   permissions: "0600"
+
+runcmd:
+  - apt-get update -y
+    #  - # wait for the master node to be ready by trying to connect to it
+  - until curl -k https://10.0.1.1:6443; do sleep 5; done
+    #- # copy the token from the master node
+  - REMOTE_TOKEN=$(ssh -o StrictHostKeyChecking=accept-new cluster@10.0.1.1 sudo cat /var/lib/rancher/k3s/server/node-token)
+    #- # Install k3s worker
+  - curl -sfL https://get.k3s.io | K3S_URL=https://10.0.1.1:6443 K3S_TOKEN=$REMOTE_TOKEN sh -

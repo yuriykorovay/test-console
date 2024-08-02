@@ -1,0 +1,15 @@
+#cloud-config
+packages:
+  - curl
+users:
+  - name: cluster
+    ssh-authorized-keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDftoqGWzAznEfySf0b78hISa3Tseurf4Q9YIUF/JWWb yk88@ukr.net
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBWyP4Y4M3nY4UqVgS2atmcpgs2cjFQeQa9w9GCXoktC yk88@ukr.net
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+runcmd:
+  - apt-get update -y
+  - curl https://get.k3s.io | sh -
+  - chown cluster:cluster /etc/rancher/k3s/k3s.yaml
+  - chown cluster:cluster /var/lib/rancher/k3s/server/node-token
